@@ -34,9 +34,9 @@ const COACH_INITIAL = (CONFIG.coachName.replace(/^coach\s+/i, "")[0] || "C").toU
 /* --- Zones (beginner: op gevoel/RPE, nog niet op tempo) ------------ */
 const ZONES = [
   { key: "herstel",  name: "Herstel",            pace: "heel rustig",  info: "RPE 2-3 · wandelen mag altijd" },
-  { key: "interval", name: "Hardlopen-wandelen", pace: "op gevoel",    info: "RPE 3-4 · praten moet kunnen" },
+  { key: "interval", name: "Hardlopen en wandelen", pace: "op gevoel", info: "RPE 3-4 · praten moet kunnen" },
   { key: "duur",     name: "Rustig lopen",       pace: "praattempo",   info: "RPE 3-4 · praten kan makkelijk" },
-  { key: "lang",     name: "Langere duur",       pace: "praattempo",   info: "RPE 4 · de langste van je week" },
+  { key: "lang",     name: "Langer rustig lopen", pace: "praattempo",  info: "RPE 4 · de langste van je week" },
 ];
 const zoneByKey = Object.fromEntries(ZONES.map((z) => [z.key, z]));
 
@@ -87,64 +87,74 @@ const WHY = {
 };
 
 /* --- 3 loopdagen: ma, wo, za ---------------------------------------- */
-const ma = (o) => ({ day: "ma", dayLabel: "Maandag",   kind: "Hardlopen-wandelen", ...o });
-const wo = (o) => ({ day: "wo", dayLabel: "Woensdag",  kind: "Hardlopen-wandelen", ...o });
-const za = (o) => ({ day: "za", dayLabel: "Zaterdag",  kind: "Langere duur",       ...o });
+const ma = (o) => ({ day: "ma", dayLabel: "Maandag",  kind: "Hardlopen en wandelen", ...o });
+const wo = (o) => ({ day: "wo", dayLabel: "Woensdag", kind: "Hardlopen en wandelen", ...o });
+const za = (o) => ({ day: "za", dayLabel: "Zaterdag", kind: "Langer rustig lopen",   ...o });
+const runWalkBlock = (repeats, runMinutes, walkMinutes, runText = "rustig hardlopen") => {
+  const nl = (value) => String(value).replace(".", ",");
+  const pauses = Math.max(0, repeats - 1);
+  return `${repeats}× ${nl(runMinutes)} min ${runText}; wandel ${nl(walkMinutes)} min tussen de loopblokken (${pauses} wandelpauzes, niet na het laatste blok)`;
+};
 
 const PLAN = [
   { week: 1, dates: "13–19 jul", phase: "Fase 1 · Wennen", sessions: [
-    ma({ zone: "interval", min: 26, title: "6× 1 min lopen / 1,5 min wandelen", goal: "Rustig kennismaken", blocks: ["5 min stevig inwandelen", "6× (1 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "interval", min: 24, title: "5× 1 min lopen / 2 min wandelen",   goal: "Herhalen, iets rustiger", blocks: ["5 min stevig inwandelen", "5× (1 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 28, title: "7× 1 min lopen / 1,5 min wandelen", goal: "Iets langer bezig zijn", blocks: ["5 min stevig inwandelen", "7× (1 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 24, title: "6× 1 min lopen", goal: "Rustig kennismaken", blocks: ["5 min stevig inwandelen", runWalkBlock(6, 1, 1.5), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
+    wo({ zone: "interval", min: 23, title: "5× 1 min lopen", goal: "Herhalen, iets rustiger", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 1, 2), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 26, title: "7× 1 min lopen", goal: "Iets langer bezig zijn", blocks: ["5 min stevig inwandelen", runWalkBlock(7, 1, 1.5), "5 min uitwandelen"] }),
   ]},
   { week: 2, dates: "20–26 jul", phase: "Fase 1 · Wennen", sessions: [
-    ma({ zone: "interval", min: 28, title: "6× 1,5 min lopen / 1,5 min wandelen", goal: "Loopstukjes iets langer", blocks: ["5 min stevig inwandelen", "6× (1,5 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "herstel",  min: 24, title: "5× 1 min lopen / 2 min wandelen",     goal: "Lekker licht tussendoor", blocks: ["5 min stevig inwandelen", "5× (1 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 30, title: "7× 1,5 min lopen / 1,5 min wandelen", goal: "Langste van de week", blocks: ["5 min stevig inwandelen", "7× (1,5 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 27, title: "6× 1,5 min lopen", goal: "Loopstukjes iets langer", blocks: ["5 min stevig inwandelen", runWalkBlock(6, 1.5, 1.5), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
+    wo({ zone: "herstel",  min: 23, title: "5× 1 min lopen", goal: "Lekker licht tussendoor", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 1, 2, "heel rustig hardlopen"), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 30, title: "7× 1,5 min lopen", goal: "Langste van de week", blocks: ["5 min stevig inwandelen", runWalkBlock(7, 1.5, 1.5), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
   ]},
   { week: 3, dates: "27 jul–2 aug", phase: "Fase 1 · Wennen", sessions: [
-    ma({ zone: "interval", min: 28, title: "5× 2 min lopen / 1,5 min wandelen", goal: "Twee minuten per blok", blocks: ["5 min stevig inwandelen", "5× (2 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "interval", min: 26, title: "6× 1,5 min lopen / 1,5 min wandelen", goal: "Ritme vasthouden", blocks: ["5 min stevig inwandelen", "6× (1,5 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 30, title: "6× 2 min lopen / 1,5 min wandelen", goal: "Langer op de benen", blocks: ["5 min stevig inwandelen", "6× (2 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 26, title: "5× 2 min lopen", goal: "Twee minuten per blok", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 2, 1.5), "5 min uitwandelen"] }),
+    wo({ zone: "interval", min: 27, title: "6× 1,5 min lopen", goal: "Ritme vasthouden", blocks: ["5 min stevig inwandelen", runWalkBlock(6, 1.5, 1.5), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
+    za({ zone: "lang",     min: 30, title: "6× 2 min lopen", goal: "Langer op de benen", blocks: ["5 min stevig inwandelen", runWalkBlock(6, 2, 1.5), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
   ]},
   { week: 4, dates: "3–9 aug", phase: "Fase 1 · Wennen", recovery: true, sessions: [
-    ma({ zone: "herstel",  min: 24, title: "5× 1,5 min lopen / 2 min wandelen", goal: "Rustige week: bijtanken", blocks: ["5 min stevig inwandelen", "5× (1,5 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "herstel",  min: 22, title: "4× 1,5 min lopen / 2 min wandelen", goal: "Licht en soepel", blocks: ["5 min stevig inwandelen", "4× (1,5 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 28, title: "5× 2 min lopen / 2 min wandelen",   goal: "Rustig de week afronden", blocks: ["5 min stevig inwandelen", "5× (2 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "herstel",  min: 26, title: "5× 1,5 min lopen", goal: "Rustige week: bijtanken", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 1.5, 2, "heel rustig hardlopen"), "5 min uitwandelen", "Totaaltijd is afgerond op een hele minuut."] }),
+    wo({ zone: "herstel",  min: 22, title: "4× 1,5 min lopen", goal: "Licht en soepel", blocks: ["5 min stevig inwandelen", runWalkBlock(4, 1.5, 2, "heel rustig hardlopen"), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 28, title: "5× 2 min lopen", goal: "Rustig de week afronden", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 2, 2), "5 min uitwandelen"] }),
   ]},
   { week: 5, dates: "10–16 aug", phase: "Fase 2 · Langere loopstukken", sessions: [
-    ma({ zone: "interval", min: 30, title: "4× 3 min lopen / 2 min wandelen", goal: "Drie minuten per blok", blocks: ["5 min stevig inwandelen", "4× (3 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "interval", min: 26, title: "5× 2 min lopen / 1,5 min wandelen", goal: "Vertrouwd patroon", blocks: ["5 min stevig inwandelen", "5× (2 min rustig hardlopen / 1,5 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 32, title: "4× 4 min lopen / 2 min wandelen", goal: "Vier minuten volhouden", blocks: ["5 min stevig inwandelen", "4× (4 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 28, title: "4× 3 min lopen", goal: "Drie minuten per blok", blocks: ["5 min stevig inwandelen", runWalkBlock(4, 3, 2), "5 min uitwandelen"] }),
+    wo({ zone: "interval", min: 26, title: "5× 2 min lopen", goal: "Vertrouwd patroon", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 2, 1.5), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 32, title: "4× 4 min lopen", goal: "Vier minuten volhouden", blocks: ["5 min stevig inwandelen", runWalkBlock(4, 4, 2), "5 min uitwandelen"] }),
   ]},
   { week: 6, dates: "17–23 aug", phase: "Fase 2 · Langere loopstukken", sessions: [
-    ma({ zone: "interval", min: 32, title: "3× 5 min lopen / 2 min wandelen", goal: "Vijf minuten per blok", blocks: ["5 min stevig inwandelen", "3× (5 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "herstel",  min: 26, title: "5× 2 min lopen / 2 min wandelen", goal: "Licht tussendoor", blocks: ["5 min stevig inwandelen", "5× (2 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 34, title: "3× 6 min lopen / 2 min wandelen", goal: "Zes minuten volhouden", blocks: ["5 min stevig inwandelen", "3× (6 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 29, title: "3× 5 min lopen", goal: "Vijf minuten per blok", blocks: ["5 min stevig inwandelen", runWalkBlock(3, 5, 2), "5 min uitwandelen"] }),
+    wo({ zone: "herstel",  min: 28, title: "5× 2 min lopen", goal: "Licht tussendoor", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 2, 2, "heel rustig hardlopen"), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 32, title: "3× 6 min lopen", goal: "Zes minuten volhouden", blocks: ["5 min stevig inwandelen", runWalkBlock(3, 6, 2), "5 min uitwandelen"] }),
   ]},
   { week: 7, dates: "24–30 aug", phase: "Fase 2 · Langere loopstukken", sessions: [
-    ma({ zone: "interval", min: 32, title: "2× 8 min lopen / 2 min wandelen", goal: "Acht minuten per blok", blocks: ["5 min stevig inwandelen", "2× (8 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    wo({ zone: "interval", min: 28, title: "4× 3 min lopen / 2 min wandelen", goal: "Soepel blijven", blocks: ["5 min stevig inwandelen", "4× (3 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang",     min: 34, title: "2× 10 min lopen / 2 min wandelen", goal: "Tien minuten volhouden", blocks: ["5 min stevig inwandelen", "2× (10 min rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "interval", min: 28, title: "2× 8 min lopen", goal: "Acht minuten per blok", blocks: ["5 min stevig inwandelen", runWalkBlock(2, 8, 2), "5 min uitwandelen"] }),
+    wo({ zone: "interval", min: 28, title: "4× 3 min lopen", goal: "Soepel blijven", blocks: ["5 min stevig inwandelen", runWalkBlock(4, 3, 2), "5 min uitwandelen"] }),
+    za({ zone: "lang",     min: 32, title: "2× 10 min lopen", goal: "Tien minuten volhouden", blocks: ["5 min stevig inwandelen", runWalkBlock(2, 10, 2), "5 min uitwandelen"] }),
   ]},
   { week: 8, dates: "31 aug–6 sep", phase: "Fase 3 · Aan één stuk", sessions: [
-    ma({ zone: "duur", min: 30, title: "12 + 8 min lopen / 2 min wandelen", goal: "Bijna aan één stuk", blocks: ["5 min stevig inwandelen", "12 min rustig hardlopen", "2 min wandelen", "8 min rustig hardlopen", "5 min uitwandelen"] }),
-    wo({ zone: "herstel", min: 26, title: "4× 3 min lopen / 2 min wandelen", goal: "Benen fris houden", blocks: ["5 min stevig inwandelen", "4× (3 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
+    ma({ zone: "duur", min: 32, title: "12 + 8 min lopen", goal: "Bijna aan één stuk", blocks: ["5 min stevig inwandelen", "12 min rustig hardlopen", "2 min wandelen tussen de twee loopblokken", "8 min rustig hardlopen", "5 min uitwandelen"] }),
+    wo({ zone: "herstel", min: 28, title: "4× 3 min lopen", goal: "Benen fris houden", blocks: ["5 min stevig inwandelen", runWalkBlock(4, 3, 2, "heel rustig hardlopen"), "5 min uitwandelen"] }),
     za({ zone: "duur", min: 32, title: "🎉 20 min aan één stuk", goal: "Mijlpaal: 20 min non-stop", blocks: ["6 min stevig inwandelen", "20 min rustig aaneengesloten hardlopen (praattempo!)", "Voelt het zwaar? Even wandelen mag, afmaken telt.", "6 min uitwandelen"] }),
   ]},
   { week: 9, dates: "7–13 sep", phase: "Fase 3 · Aan één stuk", sessions: [
-    ma({ zone: "duur", min: 30, title: "15 min aan één stuk", goal: "Non-stop wordt normaal", blocks: ["5 min stevig inwandelen", "15 min rustig aaneengesloten hardlopen", "3 min wandelen", "5 min rustig hardlopen", "5 min uitwandelen"] }),
-    wo({ zone: "herstel", min: 24, title: "5× 2 min lopen / 2 min wandelen", goal: "Licht en soepel", blocks: ["5 min stevig inwandelen", "5× (2 min heel rustig hardlopen / 2 min wandelen)", "5 min uitwandelen"] }),
-    za({ zone: "lang", min: 36, title: "25 min aan één stuk", goal: "Bijna op afstand", blocks: ["6 min stevig inwandelen", "25 min rustig aaneengesloten hardlopen (praattempo!)", "6 min uitwandelen"] }),
+    ma({ zone: "duur", min: 33, title: "15 min aan één stuk", goal: "Non-stop wordt normaal", blocks: ["5 min stevig inwandelen", "15 min rustig aaneengesloten hardlopen", "3 min wandelen tussen de twee loopblokken", "5 min rustig hardlopen", "5 min uitwandelen"] }),
+    wo({ zone: "herstel", min: 28, title: "5× 2 min lopen", goal: "Licht en soepel", blocks: ["5 min stevig inwandelen", runWalkBlock(5, 2, 2, "heel rustig hardlopen"), "5 min uitwandelen"] }),
+    za({ zone: "lang", min: 37, title: "25 min aan één stuk", goal: "Bijna op afstand", blocks: ["6 min stevig inwandelen", "25 min rustig aaneengesloten hardlopen (praattempo!)", "6 min uitwandelen"] }),
   ]},
   { week: 10, dates: "14–20 sep", phase: "Fase 4 · De 5 km", finish: true, sessions: [
-    ma({ zone: "duur", min: 28, title: "12 min aan één stuk, rustig", goal: "Benen fris houden", blocks: ["5 min stevig inwandelen", "12 min rustig aaneengesloten hardlopen", "5 min uitwandelen"] }),
-    wo({ zone: "herstel", min: 22, title: "8 min soepel + versnellingen", goal: "Fris naar de finale", blocks: ["5 min stevig inwandelen", "8 min heel rustig hardlopen", "3× 20 sec soepel versnellen (geen sprint)", "5 min uitwandelen"] }),
-    za({ zone: "lang", min: 40, title: "🎉 5 km aan één stuk", race: true, kind: "Finale", goal: "Jouw 5 km: rustig en trots", blocks: ["6 min stevig inwandelen", "5 km rustig aaneengesloten uitlopen (± 30–38 min, praattempo!)", "Voelt het zwaar? Even wandelen mag altijd, uitlopen telt.", "5 min uitwandelen. Chapeau, strijder! 🎉"] }),
+    ma({ zone: "duur", min: 22, title: "12 min aan één stuk, rustig", goal: "Benen fris houden", blocks: ["5 min stevig inwandelen", "12 min rustig aaneengesloten hardlopen", "5 min uitwandelen"] }),
+    wo({ zone: "herstel", min: 21, title: "8 min soepel + versnellingen", goal: "Fris naar de finale", blocks: ["5 min stevig inwandelen", "8 min heel rustig hardlopen", "3× 20 sec soepel versnellen (geen sprint)", "2× 60 sec heel rustig tussen de versnellingen; na de laatste meteen uitwandelen", "5 min uitwandelen"] }),
+    za({ zone: "lang", min: 46, title: "🎉 5 km aan één stuk", race: true, kind: "Finale", goal: "Jouw 5 km: rustig en trots", blocks: ["6 min stevig inwandelen", "5 km rustig aaneengesloten uitlopen (± 30–38 min, praattempo!)", "Voelt het zwaar? Even wandelen mag altijd, uitlopen telt.", "5 min uitwandelen. Chapeau, strijder! 🎉", "Totale training: ongeveer 41–49 min."] }),
   ]},
 ];
 
 const INFO = [
+  { icon: "🔢", title: "Zo lees je de blokken", items: [
+    "5× 3 min betekent: vijf loopblokken van drie minuten.",
+    "Je wandelt alleen tussen de loopblokken. Vijf loopblokken hebben dus vier wandelpauzes.",
+    "Na het laatste loopblok ga je direct uitwandelen; er komt geen extra wandelpauze meer bij.",
+    "In- en uitwandelen tellen mee in de geplande totaaltijd. Halve minuten zijn afgerond op hele minuten." ] },
   { icon: "👟", title: "Schoenen & ondergrond", items: [
     "Loop op echte hardloopschoenen met demping, niet op versleten sneakers.",
     "Zachte ondergrond (bospad, gravel) is fijner voor je benen dan alleen asfalt.",

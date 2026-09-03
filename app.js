@@ -145,7 +145,7 @@ const PLAN = [
   { week: 10, dates: "14–20 sep", phase: "Fase 4 · De 5 km", finish: true, sessions: [
     ma({ zone: "duur", min: 22, title: "12 min aan één stuk, rustig", goal: "Benen fris houden", blocks: ["5 min stevig inwandelen", "12 min rustig aaneengesloten hardlopen", "5 min uitwandelen"] }),
     wo({ zone: "herstel", min: 21, title: "8 min soepel + versnellingen", goal: "Fris naar de finale", blocks: ["5 min stevig inwandelen", "8 min heel rustig hardlopen", "3× 20 sec soepel versnellen (geen sprint)", "2× 60 sec heel rustig tussen de versnellingen; na de laatste meteen uitwandelen", "5 min uitwandelen"] }),
-    za({ zone: "lang", min: 46, title: "🎉 5 km aan één stuk", race: true, kind: "Finale", goal: "Jouw 5 km: rustig en trots", blocks: ["6 min stevig inwandelen", "5 km rustig aaneengesloten uitlopen (± 30–38 min, praattempo!)", "Voelt het zwaar? Even wandelen mag altijd, uitlopen telt.", "5 min uitwandelen. Chapeau, strijder! 🎉", "Totale training: ongeveer 41–49 min."] }),
+    za({ zone: "lang", min: 46, title: "🎉 5 km aan één stuk", kind: "Finale", goal: "Jouw 5 km: rustig en trots", blocks: ["6 min stevig inwandelen", "5 km rustig aaneengesloten uitlopen (± 30–38 min, praattempo!)", "Voelt het zwaar? Even wandelen mag altijd, uitlopen telt.", "5 min uitwandelen. Chapeau, strijder! 🎉", "Totale training: ongeveer 41–49 min."] }),
   ]},
 ];
 
@@ -492,7 +492,7 @@ function renderChart() {
 function tagOf(w) {
   if (w.finish) return `<span class="week-tag tag-race">Finale</span>`;
   if (w.race) return `<span class="week-tag tag-race">Raceweek</span>`;
-  if (w.tuneup) return `<span class="week-tag tag-tuneup">10 km race</span>`;
+  if (w.tuneup) return `<span class="week-tag tag-tuneup">${w.tuneupTag || "Wedstrijd"}</span>`;
   if (w.recovery) return `<span class="week-tag tag-rest">Herstel</span>`;
   if (w.taper) return `<span class="week-tag tag-taper">Taper</span>`;
   return "";

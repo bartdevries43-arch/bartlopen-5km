@@ -283,7 +283,7 @@ function fmtPace(perKm) {
 
 /* Afgeleide statistieken uit de log */
 function computeStats() {
-  let done = 0, km = 0, maxDist = 0, maxTime = 0, bestPace = 0, raceDone = false;
+  let done = 0, km = 0, maxDist = 0, maxTime = 0, bestPace = 0, secs = 0, raceDone = false;
   flatSessions.forEach((s) => {
     const e = log[sid(s.week, s.day)];
     if (!e || !e.done) return;
@@ -292,6 +292,7 @@ function computeStats() {
     km += d;
     if (d > maxDist) maxDist = d;
     const t = parseTime(e.time) || 0;
+    secs += t;
     if (t > maxTime) maxTime = t;
     const p = paceSeconds(e.distance, e.time);
     if (p && (bestPace === 0 || p < bestPace)) bestPace = p;
@@ -306,7 +307,7 @@ function computeStats() {
   PLAN.forEach((w) => {
     if (w.sessions.every((s) => log[sid(w.week, s.day)]?.done)) fullWeeks++;
   });
-  return { done, total: totalSessions, km, maxDist, maxTime, bestPace, raceDone, streak, fullWeeks };
+  return { done, total: totalSessions, km, maxDist, maxTime, bestPace, secs, raceDone, streak, fullWeeks };
 }
 
 function currentWeek() {
@@ -619,12 +620,20 @@ function renderRecords(stats) {
   const longest = UNIT === "min"
     ? (stats.maxTime ? `${Math.round(stats.maxTime / 60)} min` : "–")
     : (stats.maxDist ? `${nlNum(stats.maxDist)} km` : "–");
-  const rows = [
-    ["⚡ Snelste tempo", pace || "–"],
-    [UNIT === "min" ? "⏱️ Langste loop" : "🏔️ Verste loop", longest],
-    ["📊 Totaal gelopen", `${nlNum(Math.round(stats.km * 10) / 10)} km`],
-    ["🔥 Langste reeks", String(stats.streak)],
-  ];
+  const totaalMin = stats.secs ? `${Math.round(stats.secs / 60)} min` : "–";
+  const rows = UNIT === "min"
+    ? [
+        stats.bestPace ? ["⚡ Snelste tempo", pace] : ["✅ Trainingen gedaan", String(stats.done)],
+        ["⏱️ Langste loop", longest],
+        ["📊 Totaal gelopen", totaalMin],
+        ["🔥 Langste reeks", String(stats.streak)],
+      ]
+    : [
+        ["⚡ Snelste tempo", pace || "–"],
+        ["🏔️ Verste loop", longest],
+        ["📊 Totaal gelopen", `${nlNum(Math.round(stats.km * 10) / 10)} km`],
+        ["🔥 Langste reeks", String(stats.streak)],
+      ];
   sec.innerHTML = `<h3 class="panel-head">Jouw records</h3>
     <div class="records">${rows.map(([l, v]) =>
       `<div class="record"><span class="record-val">${v}</span><span class="record-label">${l}</span></div>`).join("")}</div>`;
@@ -770,7 +779,7 @@ function openDetail(week, day) {
     </div>
 
     <section class="detail-block why">
-      <h4>${isRaceDetail ? "Waarom deze wedstrijd" : "Waarom deze training"}</h4>
+      <h4>${isRaceDetail ? (w.finish ? "Waarom deze mijlpaal" : "Waarom deze wedstrijd") : "Waarom deze training"}</h4>
       <p>${s.why || WHY[s.zone] || ""}</p>
     </section>
 
@@ -780,7 +789,7 @@ function openDetail(week, day) {
     </section>
 
     <section class="detail-block">
-      <h4>${isRaceDetail ? "Invullen na de wedstrijd" : "Invullen na de training"}</h4>
+      <h4>${isRaceDetail ? (w.finish ? "Invullen na je mijlpaal" : "Invullen na de wedstrijd") : "Invullen na de training"}</h4>
       <div class="form-grid">
         <label>Afstand (km)
           <input id="fDistance" type="text" inputmode="decimal" placeholder="bv. 6,2" value="${escapeHtml(e.distance ?? "")}">
